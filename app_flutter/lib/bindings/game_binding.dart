@@ -5,7 +5,7 @@ import 'package:game_core/game_core.dart';
 import '../animations/enhance_animation_controller.dart';
 import '../animations/enhance_animation_config.dart';
 import '../animations/basic_enhance_animation.dart';
-import '../repositories/in_memory_repository.dart';
+import '../repositories/storage_mode.dart';
 
 // Data providers
 final swordTableProvider = FutureProvider<SwordDataTable>((ref) async {
@@ -18,9 +18,15 @@ final masteryTableProvider = FutureProvider<MasteryLevelTable>((ref) async {
   return MasteryLevelTable(MasteryDataLoader().parse(csv));
 });
 
-// Storage repository provider — P1: InMemory, P2: Hive/Synced로 교체
+// P2-40: 저장 모드 — main.dart에서 override 가능
+final storageModeProvider = Provider<StorageMode>((ref) {
+  return StorageMode.local; // 기본: 로컬 모드
+});
+
+// Storage repository provider — StorageMode에 따라 구현체 자동 선택
 final storageRepositoryProvider = Provider<StorageRepository>((ref) {
-  return InMemoryRepository();
+  final mode = ref.watch(storageModeProvider);
+  return createRepository(mode);
 });
 
 // Game engine provider - depends on data loading

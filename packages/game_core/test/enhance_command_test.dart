@@ -228,7 +228,7 @@ void main() {
           hasActiveProtection: false,
           playerData: PlayerData(
             gold: 100,
-            adLimits: AdLimits(adProtectionUsedToday: 2), // No ad available
+            adLimits: AdLimits(adProtectionUsedToday: 2, lastResetDate: DateTime(2025, 1, 1)), // No ad available
           ),
         );
         final context = createTestContext(

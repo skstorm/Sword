@@ -4,6 +4,8 @@ import '../events/game_event.dart';
 import '../events/enhance_event.dart';
 import '../logic/enhance_logic.dart';
 import '../logic/economy_logic.dart';
+import '../logic/fragment_logic.dart';
+import '../logic/mastery_logic.dart';
 import '../logic/game_session_logic.dart';
 import '../models/game_state.dart';
 
@@ -103,6 +105,18 @@ class EnhanceCommand extends Command {
 
       // 파괴 확정 처리 (실제 파괴 + 광고 보호 대기가 아닌 경우)
       if (destroyed && !currentState.pendingAdProtection) {
+        // 파편 지급 (숙련도 보너스 포함)
+        final fragMasteryLevel = context.masteryTable.getLevel(
+          currentState.playerData.mastery.level,
+        );
+        final fragResult = FragmentLogic().giveFragments(
+          currentState,
+          fragMasteryLevel.fragmentBonus,
+        );
+        currentState = fragResult.newState;
+        events.addAll(fragResult.events);
+
+        // 나무검으로 리셋
         currentState = GameSessionLogic().resetToWoodenSword(
           currentState,
           context.swordTable,
@@ -127,6 +141,11 @@ class EnhanceCommand extends Command {
         playerData: currentState.playerData.copyWith(stats: updatedStats),
       );
     }
+
+    // 장인 숙련도 경험치 +1 (성공/실패 무관)
+    final masteryResult = MasteryLogic().addExp(currentState, context.masteryTable);
+    currentState = masteryResult.newState;
+    events.addAll(masteryResult.events);
 
     return CommandResult(newState: currentState, events: events);
   }

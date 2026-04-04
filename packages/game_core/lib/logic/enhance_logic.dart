@@ -64,12 +64,10 @@ class EnhanceLogic {
       destroyed = false;
     } else {
       // 파괴 처리, 광고 보호 가능 여부 설정
+      // 파편 지급은 EnhanceCommand/ConfirmDestroyCommand에서 FragmentLogic을 통해 처리
       newState = state.copyWith(
         pendingAdProtection: adAvailable,
         activeModifiers: [],
-        playerData: state.playerData.copyWith(
-          fragments: state.playerData.fragments + fragmentsGained,
-        ),
       );
       destroyed = true;
     }
@@ -88,6 +86,15 @@ class EnhanceLogic {
 
   /// 광고 보호 사용 가능 여부 확인 (private)
   bool _isAdProtectionAvailable(GameState state, GameContext context) {
+    final now = context.time.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final lastReset = DateTime(
+      state.playerData.adLimits.lastResetDate.year,
+      state.playerData.adLimits.lastResetDate.month,
+      state.playerData.adLimits.lastResetDate.day,
+    );
+    // 날짜가 바뀌면 카운터 리셋으로 간주
+    if (today.isAfter(lastReset)) return true;
     return state.playerData.adLimits.adProtectionUsedToday < 2;
   }
 }

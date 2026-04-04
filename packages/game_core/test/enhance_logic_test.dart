@@ -167,19 +167,19 @@ void main() {
         expect(result.newState.hasActiveProtection, isFalse); // Protection consumed
       });
 
-      test('adds fragments when fail', () {
+      test('does not add fragments directly (fragments handled by FragmentLogic)', () {
         final state = createTestState(
           level: 5,
           swordTable: swordTable,
           playerData: PlayerData(gold: 1000, fragments: 10),
         );
-        final fragmentsGained = swordTable.getSword(5)!.fragmentReward;
 
         final result = logic.handleFail(state, swordTable, context);
 
-        expect(result.newState.playerData.fragments, equals(10 + fragmentsGained));
+        // enhance_logic no longer adds fragments directly — FragmentLogic handles it
+        expect(result.newState.playerData.fragments, equals(10));
         final event = result.events[0] as EnhanceFailEvent;
-        expect(event.fragmentsGained, equals(fragmentsGained));
+        expect(event.fragmentsGained, equals(swordTable.getSword(5)!.fragmentReward));
       });
 
       test('clears active modifiers after fail', () {
@@ -218,7 +218,7 @@ void main() {
           swordTable: swordTable,
           playerData: PlayerData(
             gold: 1000,
-            adLimits: AdLimits(adProtectionUsedToday: 2),
+            adLimits: AdLimits(adProtectionUsedToday: 2, lastResetDate: DateTime(2025, 1, 1)),
           ),
         );
 

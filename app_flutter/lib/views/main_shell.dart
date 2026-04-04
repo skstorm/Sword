@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'enhance_view.dart';
+import 'workshop_view.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -12,9 +13,9 @@ class _MainShellState extends State<MainShell> {
   int _currentIndex = 0;
 
   final List<Widget> _pages = [
-    EnhanceView(),
-    _PlaceholderView(title: '공방'),
-    _PlaceholderView(title: '업적'),
+    const EnhanceView(),
+    const WorkshopView(),
+    const _PlaceholderView(title: '업적'),
   ];
 
   @override

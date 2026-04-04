@@ -42,3 +42,15 @@ class GameState {
     );
   }
 }
+
+/// 축복의 주문서 — 확률 +5%p
+class BlessingScrollModifier extends Modifier {
+  @override
+  double apply(double baseRate) => baseRate + 0.05;
+}
+
+/// 광고 부스터 — 확률 +5%p
+class AdBoosterModifier extends Modifier {
+  @override
+  double apply(double baseRate) => baseRate + 0.05;
+}

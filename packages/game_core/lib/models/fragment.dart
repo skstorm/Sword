@@ -1,3 +1,10 @@
+/// 파편 교환 아이템 타입
+enum ItemType {
+  protectionAmulet,
+  blessingScroll,
+  goldPouch,
+}
+
 /// 파편 관련 상수 (P2에서 상세 구현)
 class FragmentCost {
   static const int protectionAmulet = 30;
