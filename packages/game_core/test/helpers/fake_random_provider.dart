@@ -17,7 +17,7 @@ class FakeRandomProvider implements RandomProvider {
 
   @override
   double nextDouble() {
-    if (_seededRandom != null) return _seededRandom!.nextDouble();
+    if (_seededRandom != null) return _seededRandom.nextDouble();
     return _value;
   }
 

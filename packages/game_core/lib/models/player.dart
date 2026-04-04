@@ -1,3 +1,11 @@
+import 'achievement.dart';
+import 'collection.dart';
+import 'title.dart';
+
+export 'achievement.dart';
+export 'collection.dart';
+export 'title.dart';
+
 /// 통계 데이터 — 랭킹 산출 및 업적 판정에 사용
 class Statistics {
   final int highestEnhanceLevel;
@@ -69,22 +77,6 @@ class MasteryData {
   }
 }
 
-/// 컬렉션 데이터 (P2에서 상세 구현)
-class CollectionData {
-  final Map<int, int> collected;
-
-  const CollectionData({this.collected = const {}});
-
-  int get uniqueCount => collected.length;
-  int get totalCollectible => 11;
-  double get completionRate =>
-      totalCollectible == 0 ? 0 : uniqueCount / totalCollectible;
-
-  CollectionData copyWith({Map<int, int>? collected}) {
-    return CollectionData(collected: collected ?? this.collected);
-  }
-}
-
 /// 보유 아이템 (P2에서 상세 구현)
 class Inventory {
   final int protectionAmulets;
@@ -115,32 +107,6 @@ class AdLimits {
       adProtectionUsedToday:
           adProtectionUsedToday ?? this.adProtectionUsedToday,
       lastResetDate: lastResetDate ?? this.lastResetDate,
-    );
-  }
-}
-
-/// 업적 데이터 (P3에서 상세 구현)
-class AchievementData {
-  final Set<String> achieved;
-
-  const AchievementData({this.achieved = const {}});
-
-  AchievementData copyWith({Set<String>? achieved}) {
-    return AchievementData(achieved: achieved ?? this.achieved);
-  }
-}
-
-/// 칭호 데이터 (P3에서 상세 구현)
-class TitleData {
-  final Set<String> earned;
-  final String? equipped;
-
-  const TitleData({this.earned = const {}, this.equipped});
-
-  TitleData copyWith({Set<String>? earned, String? equipped}) {
-    return TitleData(
-      earned: earned ?? this.earned,
-      equipped: equipped ?? this.equipped,
     );
   }
 }

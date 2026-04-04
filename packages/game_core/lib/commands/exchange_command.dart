@@ -19,7 +19,7 @@ class ExchangeCommand extends Command {
   @override
   String? validate(GameState state, GameContext context) {
     if (state.pendingAdProtection) return 'pending_ad_protection';
-    if (!FragmentLogic().canExchange(state, itemType, quantity: quantity)) {
+    if (!const FragmentLogic().canExchange(state, itemType, quantity: quantity)) {
       return 'insufficient_fragments';
     }
     return null;
@@ -27,7 +27,7 @@ class ExchangeCommand extends Command {
 
   @override
   CommandResult execute(GameState state, GameContext context) {
-    final result = FragmentLogic().exchange(state, itemType, quantity: quantity);
+    final result = const FragmentLogic().exchange(state, itemType, quantity: quantity);
     final events = <GameEvent>[...result.events];
 
     if (itemType == ItemType.goldPouch) {

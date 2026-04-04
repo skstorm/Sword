@@ -1,10 +1,8 @@
+import 'modifier.dart';
 import 'sword.dart';
 import 'player.dart';
 
-/// 확률 수정자 인터페이스 (P2에서 구현)
-abstract class Modifier {
-  double apply(double baseRate);
-}
+export 'modifier.dart';
 
 /// 세션 중 변하는 상태를 통합. 커맨드의 입력이자 출력.
 class GameState {
@@ -41,16 +39,4 @@ class GameState {
       pendingAdProtection: pendingAdProtection ?? this.pendingAdProtection,
     );
   }
-}
-
-/// 축복의 주문서 — 확률 +5%p
-class BlessingScrollModifier extends Modifier {
-  @override
-  double apply(double baseRate) => baseRate + 0.05;
-}
-
-/// 광고 부스터 — 확률 +5%p
-class AdBoosterModifier extends Modifier {
-  @override
-  double apply(double baseRate) => baseRate + 0.05;
 }

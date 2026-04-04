@@ -1,10 +1,11 @@
-import '../commands/command.dart';
+import 'logic_result.dart';
 import '../events/game_event.dart';
 import '../events/collection_event.dart';
 import '../models/game_state.dart';
 
 /// 컬렉션 로직 — 순수 함수 모음
 class CollectionLogic {
+  const CollectionLogic();
   /// 현재 검을 컬렉션에 등록
   LogicResult collect(GameState state) {
     final level = state.currentLevel;

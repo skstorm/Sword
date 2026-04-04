@@ -1,10 +1,11 @@
-import '../commands/command.dart';
+import 'logic_result.dart';
 import '../events/fragment_event.dart';
 import '../models/fragment.dart';
 import '../models/game_state.dart';
 
 /// 파편 로직 — 순수 함수 모음
 class FragmentLogic {
+  const FragmentLogic();
   /// 파괴 시 파편 지급 (기본 파편 + 숙련도 보너스)
   LogicResult giveFragments(GameState state, int fragmentBonus) {
     final baseFragments = state.currentSword.fragmentReward;

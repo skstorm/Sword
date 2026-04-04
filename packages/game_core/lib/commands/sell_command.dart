@@ -32,7 +32,7 @@ class SellCommand extends Command {
     final sellPrice = state.currentSword.sellPrice ?? 0;
 
     // 2. 골드 획득
-    final economyResult = EconomyLogic().addGold(state, sellPrice, 'sell');
+    final economyResult = const EconomyLogic().addGold(state, sellPrice, 'sell');
     var currentState = economyResult.newState;
     events.addAll(economyResult.events);
 
@@ -45,7 +45,7 @@ class SellCommand extends Command {
     events.add(sellEvent);
 
     // 4. 나무 검으로 리셋
-    currentState = GameSessionLogic().resetToWoodenSword(
+    currentState = const GameSessionLogic().resetToWoodenSword(
       currentState,
       context.swordTable,
     );

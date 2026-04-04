@@ -5,6 +5,7 @@ library;
 // Models
 export 'models/sword.dart';
 export 'models/game_state.dart';
+export 'models/modifier.dart';
 export 'models/player.dart';
 export 'models/mastery.dart';
 export 'models/fragment.dart';
@@ -34,7 +35,11 @@ export 'events/ad_event.dart';
 
 // Engine
 export 'engine/game_engine.dart';
+export 'engine/game_context.dart';
 export 'engine/session_recorder.dart';
+
+// Logic (shared types only)
+export 'logic/logic_result.dart';
 
 // Repositories
 export 'repositories/storage_repository.dart';

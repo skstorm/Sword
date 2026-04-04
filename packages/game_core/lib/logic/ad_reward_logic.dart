@@ -1,4 +1,4 @@
-import '../commands/command.dart';
+import 'logic_result.dart';
 import '../events/ad_event.dart';
 import '../events/economy_event.dart';
 import '../models/game_state.dart';
@@ -7,6 +7,7 @@ import '../util/time_provider.dart';
 
 /// 광고 보상 로직 — 순수 함수 모음
 class AdRewardLogic {
+  const AdRewardLogic();
   /// 광고 보호권 사용 — 파괴 취소, 현재 단계 유지
   LogicResult applyProtection(GameState state, TimeProvider time) {
     final adLimits = _resetIfNewDay(state.playerData.adLimits, time);

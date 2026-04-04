@@ -1,9 +1,10 @@
-import '../commands/command.dart';
+import 'logic_result.dart';
 import '../events/economy_event.dart';
 import '../models/game_state.dart';
 
 /// 경제 로직 — 순수 함수 모음
 class EconomyLogic {
+  const EconomyLogic();
   /// 비용을 감당할 수 있는지 확인
   bool canAfford(GameState state, int cost) {
     return state.playerData.gold >= cost;

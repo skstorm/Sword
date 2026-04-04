@@ -21,12 +21,12 @@ class CollectCommand extends Command {
     final events = <GameEvent>[];
 
     // 1. 컬렉션 등록
-    final collectResult = CollectionLogic().collect(state);
+    final collectResult = const CollectionLogic().collect(state);
     var currentState = collectResult.newState;
     events.addAll(collectResult.events);
 
     // 2. 나무검으로 리셋
-    currentState = GameSessionLogic().resetToWoodenSword(
+    currentState = const GameSessionLogic().resetToWoodenSword(
       currentState,
       context.swordTable,
     );

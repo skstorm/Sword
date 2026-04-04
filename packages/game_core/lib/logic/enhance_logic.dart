@@ -1,4 +1,4 @@
-import '../commands/command.dart';
+import 'logic_result.dart';
 import '../events/enhance_event.dart';
 import '../models/game_state.dart';
 import '../models/sword.dart';
@@ -6,6 +6,8 @@ import '../util/random_provider.dart';
 
 /// 강화 로직 — 순수 함수 모음
 class EnhanceLogic {
+  const EnhanceLogic();
+
   /// 현재 상태의 수정자를 적용한 실효 성공률 반환 (0.0~1.0)
   double getEffectiveRate(GameState state, Sword targetSword) {
     double rate = targetSword.successRate ?? 0.0;
@@ -43,14 +45,14 @@ class EnhanceLogic {
   }
 
   /// 강화 실패 처리
+  /// [adProtectionAvailable]은 Command에서 AdRewardLogic으로 판단하여 전달
   LogicResult handleFail(
     GameState state,
-    SwordDataTable table,
-    GameContext context,
-  ) {
+    SwordDataTable table, {
+    required bool adProtectionAvailable,
+  }) {
     final fragmentsGained = state.currentSword.fragmentReward;
     final goldSpent = table.getSword(state.currentLevel + 1)?.enhanceCost ?? 0;
-    final adAvailable = _isAdProtectionAvailable(state, context);
 
     GameState newState;
     bool destroyed;
@@ -64,9 +66,8 @@ class EnhanceLogic {
       destroyed = false;
     } else {
       // 파괴 처리, 광고 보호 가능 여부 설정
-      // 파편 지급은 EnhanceCommand/ConfirmDestroyCommand에서 FragmentLogic을 통해 처리
       newState = state.copyWith(
-        pendingAdProtection: adAvailable,
+        pendingAdProtection: adProtectionAvailable,
         activeModifiers: [],
       );
       destroyed = true;
@@ -77,24 +78,10 @@ class EnhanceLogic {
       destroyedSwordName: state.currentSword.name,
       fragmentsGained: destroyed ? fragmentsGained : 0,
       goldSpent: goldSpent,
-      adProtectionAvailable: adAvailable,
+      adProtectionAvailable: adProtectionAvailable,
       destroyed: destroyed,
     );
 
     return LogicResult(newState, [event]);
-  }
-
-  /// 광고 보호 사용 가능 여부 확인 (private)
-  bool _isAdProtectionAvailable(GameState state, GameContext context) {
-    final now = context.time.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final lastReset = DateTime(
-      state.playerData.adLimits.lastResetDate.year,
-      state.playerData.adLimits.lastResetDate.month,
-      state.playerData.adLimits.lastResetDate.day,
-    );
-    // 날짜가 바뀌면 카운터 리셋으로 간주
-    if (today.isAfter(lastReset)) return true;
-    return state.playerData.adLimits.adProtectionUsedToday < 2;
   }
 }

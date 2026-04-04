@@ -2,15 +2,12 @@ import 'package:test/test.dart';
 import 'package:game_core/game_core.dart';
 import 'helpers/test_data.dart';
 import 'helpers/fake_random_provider.dart';
-import 'helpers/fake_time_provider.dart';
 
 void main() {
   late SwordDataTable swordTable;
-  late MasteryLevelTable masteryTable;
 
   setUp(() {
     swordTable = createTestSwordTable();
-    masteryTable = createTestMasteryTable();
   });
 
   group('ExchangeCommand', () {

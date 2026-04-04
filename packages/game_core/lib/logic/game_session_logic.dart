@@ -4,6 +4,7 @@ import '../models/sword.dart';
 
 /// 게임 세션 로직 — 순수 함수 모음
 class GameSessionLogic {
+  const GameSessionLogic();
   /// 초기 게임 상태 생성
   GameState createInitialState(
     PlayerData playerData,

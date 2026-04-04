@@ -1,4 +1,4 @@
-import '../commands/command.dart';
+import 'logic_result.dart';
 import '../events/game_event.dart';
 import '../events/mastery_event.dart';
 import '../models/game_state.dart';
@@ -6,6 +6,7 @@ import '../models/mastery.dart';
 
 /// 장인 숙련도 로직 — 순수 함수 모음
 class MasteryLogic {
+  const MasteryLogic();
   /// 강화 시도 시 경험치 +1, 레벨업 판정
   LogicResult addExp(GameState state, MasteryLevelTable table) {
     final newAttempts = state.playerData.mastery.totalAttempts + 1;

@@ -10,12 +10,10 @@ void main() {
   group('EnhanceLogic', () {
     late EnhanceLogic logic;
     late SwordDataTable swordTable;
-    late GameContext context;
 
     setUp(() {
       logic = EnhanceLogic();
       swordTable = createTestSwordTable();
-      context = createTestContext(swordTable: swordTable);
     });
 
     group('getEffectiveRate', () {
@@ -144,7 +142,9 @@ void main() {
           hasActiveProtection: false,
         );
 
-        final result = logic.handleFail(state, swordTable, context);
+        final result = logic.handleFail(
+          state, swordTable, adProtectionAvailable: true,
+        );
 
         expect(result.events.length, equals(1));
         final event = result.events[0] as EnhanceFailEvent;
@@ -160,7 +160,9 @@ void main() {
           hasActiveProtection: true,
         );
 
-        final result = logic.handleFail(state, swordTable, context);
+        final result = logic.handleFail(
+          state, swordTable, adProtectionAvailable: false,
+        );
 
         final event = result.events[0] as EnhanceFailEvent;
         expect(event.destroyed, isFalse);
@@ -174,7 +176,9 @@ void main() {
           playerData: PlayerData(gold: 1000, fragments: 10),
         );
 
-        final result = logic.handleFail(state, swordTable, context);
+        final result = logic.handleFail(
+          state, swordTable, adProtectionAvailable: false,
+        );
 
         // enhance_logic no longer adds fragments directly — FragmentLogic handles it
         expect(result.newState.playerData.fragments, equals(10));
@@ -190,7 +194,9 @@ void main() {
           activeModifiers: [modifier],
         );
 
-        final result = logic.handleFail(state, swordTable, context);
+        final result = logic.handleFail(
+          state, swordTable, adProtectionAvailable: false,
+        );
 
         expect(result.newState.activeModifiers, isEmpty);
       });
@@ -199,30 +205,28 @@ void main() {
         final state = createTestState(
           level: 5,
           swordTable: swordTable,
-          playerData: PlayerData(
-            gold: 1000,
-            adLimits: AdLimits(adProtectionUsedToday: 0),
-          ),
+          playerData: PlayerData(gold: 1000),
         );
 
-        final result = logic.handleFail(state, swordTable, context);
+        final result = logic.handleFail(
+          state, swordTable, adProtectionAvailable: true,
+        );
 
         expect(result.newState.pendingAdProtection, isTrue);
         final event = result.events[0] as EnhanceFailEvent;
         expect(event.adProtectionAvailable, isTrue);
       });
 
-      test('does not set pendingAdProtection when ad limit reached', () {
+      test('does not set pendingAdProtection when ad protection unavailable', () {
         final state = createTestState(
           level: 5,
           swordTable: swordTable,
-          playerData: PlayerData(
-            gold: 1000,
-            adLimits: AdLimits(adProtectionUsedToday: 2, lastResetDate: DateTime(2025, 1, 1)),
-          ),
+          playerData: PlayerData(gold: 1000),
         );
 
-        final result = logic.handleFail(state, swordTable, context);
+        final result = logic.handleFail(
+          state, swordTable, adProtectionAvailable: false,
+        );
 
         expect(result.newState.pendingAdProtection, isFalse);
         final event = result.events[0] as EnhanceFailEvent;
