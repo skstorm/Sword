@@ -15,9 +15,13 @@ export 'models/ranking.dart';
 
 // Commands
 export 'commands/command.dart';
+export 'commands/enhance_command.dart';
+export 'commands/sell_command.dart';
 
 // Events
 export 'events/game_event.dart';
+export 'events/enhance_event.dart';
+export 'events/economy_event.dart';
 
 // Engine
 export 'engine/game_engine.dart';
