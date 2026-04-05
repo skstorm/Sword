@@ -6,6 +6,7 @@ import '../animations/enhance_animation_controller.dart';
 import '../animations/enhance_animation_config.dart';
 import '../animations/basic_enhance_animation.dart';
 import '../repositories/storage_mode.dart';
+import 'game_notifier.dart';
 
 // Data providers
 final swordTableProvider = FutureProvider<SwordDataTable>((ref) async {
@@ -48,8 +49,9 @@ final gameEngineProvider = FutureProvider<GameEngine>((ref) async {
   return GameEngine(initialState: initialState, context: context);
 });
 
-// Current state provider - rebuilds when engine state changes
-final gameStateProvider = StateProvider<GameState?>((ref) => null);
+// GameNotifier — 엔진 상태를 자동으로 관리
+final gameNotifierProvider =
+    NotifierProvider.autoDispose<GameNotifier, GameState?>(GameNotifier.new);
 
 // Animation providers
 final enhanceAnimationProvider = Provider<EnhanceAnimationController>((ref) {

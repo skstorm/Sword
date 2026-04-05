@@ -1,41 +1,15 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:game_core/game_core.dart';
 import '../bindings/game_binding.dart';
+import '../bindings/game_notifier.dart';
 
-class WorkshopView extends ConsumerStatefulWidget {
+class WorkshopView extends ConsumerWidget {
   const WorkshopView({super.key});
 
   @override
-  ConsumerState<WorkshopView> createState() => _WorkshopViewState();
-}
-
-class _WorkshopViewState extends ConsumerState<WorkshopView> {
-  StreamSubscription<GameEvent>? _sub;
-
-  @override
-  void initState() {
-    super.initState();
-    _listenEvents();
-  }
-
-  Future<void> _listenEvents() async {
-    final engine = await ref.read(gameEngineProvider.future);
-    _sub = engine.events.listen((_) {
-      ref.read(gameStateProvider.notifier).state = engine.state;
-    });
-  }
-
-  @override
-  void dispose() {
-    _sub?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final gameState = ref.watch(gameStateProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final gameState = ref.watch(gameNotifierProvider);
     if (gameState == null) {
       return Scaffold(
         backgroundColor: Colors.grey[900],
@@ -65,8 +39,8 @@ class _WorkshopViewState extends ConsumerState<WorkshopView> {
         body: TabBarView(
           children: [
             _MasteryTab(state: gameState),
-            _ExchangeTab(state: gameState, ref: ref),
-            _CollectionTab(state: gameState, ref: ref),
+            const _ExchangeTab(),
+            const _CollectionTab(),
           ],
         ),
       ),
@@ -76,118 +50,115 @@ class _WorkshopViewState extends ConsumerState<WorkshopView> {
 
 // ─── 숙련도 탭 ───
 
-class _MasteryTab extends StatelessWidget {
+class _MasteryTab extends ConsumerWidget {
   final GameState state;
   const _MasteryTab({required this.state});
 
   @override
-  Widget build(BuildContext context) {
-    return Consumer(builder: (context, ref, _) {
-      final masteryAsync = ref.watch(masteryTableProvider);
-      if (!masteryAsync.hasValue) {
-        return const Center(child: CircularProgressIndicator());
-      }
-      final table = masteryAsync.value!;
-      final mastery = state.playerData.mastery;
-      final current = table.getLevel(mastery.level);
-      final allLevels = table.allLevels;
-      final nextIdx = allLevels.indexWhere((l) => l.level == mastery.level) + 1;
-      final next = nextIdx < allLevels.length ? allLevels[nextIdx] : null;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final masteryAsync = ref.watch(masteryTableProvider);
+    if (!masteryAsync.hasValue) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    final table = masteryAsync.value!;
+    final mastery = state.playerData.mastery;
+    final current = table.getLevel(mastery.level);
+    final allLevels = table.allLevels;
+    final nextIdx = allLevels.indexWhere((l) => l.level == mastery.level) + 1;
+    final next = nextIdx < allLevels.length ? allLevels[nextIdx] : null;
 
-      final progress = next != null
-          ? (mastery.totalAttempts - current.requiredExp) /
-              (next.requiredExp - current.requiredExp)
-          : 1.0;
-
-      return Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            const SizedBox(height: 24),
-            Icon(Icons.hardware, size: 64, color: Colors.amber[300]),
-            const SizedBox(height: 16),
-            Text(
-              'Lv.${mastery.level}',
-              style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.white),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              current.rewardDescription.isNotEmpty ? current.rewardDescription : '초보 장인',
-              style: TextStyle(fontSize: 16, color: Colors.grey[400]),
-            ),
-            const SizedBox(height: 32),
-            // 경험치 바
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('강화 횟수: ${mastery.totalAttempts}회',
-                        style: TextStyle(color: Colors.grey[300])),
-                    if (next != null)
-                      Text('다음 레벨: ${next.requiredExp}회',
-                          style: TextStyle(color: Colors.grey[500])),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: LinearProgressIndicator(
-                    value: progress.clamp(0.0, 1.0),
-                    minHeight: 12,
-                    backgroundColor: Colors.grey[800],
-                    valueColor: const AlwaysStoppedAnimation(Colors.amber),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 32),
-            if (next != null) ...[
-              Text('다음 보상', style: TextStyle(fontSize: 14, color: Colors.grey[500])),
-              const SizedBox(height: 8),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.grey[850],
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
-                ),
-                child: Text(
-                  next.rewardDescription,
-                  style: const TextStyle(fontSize: 16, color: Colors.amber),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ],
-            if (next == null)
-              const Text('최고 레벨 달성!',
-                  style: TextStyle(fontSize: 18, color: Colors.amber, fontWeight: FontWeight.bold)),
-          ],
-        ),
-      );
-    });
-  }
-}
-
-// ─── 교환소 탭 ───
-
-class _ExchangeTab extends StatelessWidget {
-  final GameState state;
-  final WidgetRef ref;
-  const _ExchangeTab({required this.state, required this.ref});
-
-  @override
-  Widget build(BuildContext context) {
-    final fragments = state.playerData.fragments;
-    final inv = state.playerData.inventory;
+    final progress = next != null
+        ? (mastery.totalAttempts - current.requiredExp) /
+            (next.requiredExp - current.requiredExp)
+        : 1.0;
 
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
-          // 보유 파편
+          const SizedBox(height: 24),
+          Icon(Icons.hardware, size: 64, color: Colors.amber[300]),
+          const SizedBox(height: 16),
+          Text(
+            'Lv.${mastery.level}',
+            style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.white),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            current.rewardDescription.isNotEmpty ? current.rewardDescription : '초보 장인',
+            style: TextStyle(fontSize: 16, color: Colors.grey[400]),
+          ),
+          const SizedBox(height: 32),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('강화 횟수: ${mastery.totalAttempts}회',
+                      style: TextStyle(color: Colors.grey[300])),
+                  if (next != null)
+                    Text('다음 레벨: ${next.requiredExp}회',
+                        style: TextStyle(color: Colors.grey[500])),
+                ],
+              ),
+              const SizedBox(height: 8),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: LinearProgressIndicator(
+                  value: progress.clamp(0.0, 1.0),
+                  minHeight: 12,
+                  backgroundColor: Colors.grey[800],
+                  valueColor: const AlwaysStoppedAnimation(Colors.amber),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 32),
+          if (next != null) ...[
+            Text('다음 보상', style: TextStyle(fontSize: 14, color: Colors.grey[500])),
+            const SizedBox(height: 8),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey[850],
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
+              ),
+              child: Text(
+                next.rewardDescription,
+                style: const TextStyle(fontSize: 16, color: Colors.amber),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
+          if (next == null)
+            const Text('최고 레벨 달성!',
+                style: TextStyle(fontSize: 18, color: Colors.amber, fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── 교환소 탭 ───
+
+class _ExchangeTab extends ConsumerWidget {
+  const _ExchangeTab();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final gameState = ref.watch(gameNotifierProvider);
+    if (gameState == null) return const SizedBox.shrink();
+
+    final fragments = gameState.playerData.fragments;
+    final inv = gameState.playerData.inventory;
+
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        children: [
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             decoration: BoxDecoration(
@@ -200,12 +171,12 @@ class _ExchangeTab extends StatelessWidget {
                 Icon(Icons.diamond, color: Colors.cyan[300], size: 28),
                 const SizedBox(width: 8),
                 Text('$fragments 파편',
-                    style: const TextStyle(fontSize: 22, color: Colors.white, fontWeight: FontWeight.bold)),
+                    style: const TextStyle(
+                        fontSize: 22, color: Colors.white, fontWeight: FontWeight.bold)),
               ],
             ),
           ),
           const SizedBox(height: 32),
-          // 아이템 카드들
           _ExchangeCard(
             icon: Icons.shield,
             iconColor: Colors.blue,
@@ -213,7 +184,7 @@ class _ExchangeTab extends StatelessWidget {
             cost: FragmentCost.protectionAmulet,
             owned: inv.protectionAmulets,
             fragments: fragments,
-            onExchange: () => _exchange(ItemType.protectionAmulet),
+            onExchange: () => _exchange(ref, ItemType.protectionAmulet),
           ),
           const SizedBox(height: 16),
           _ExchangeCard(
@@ -223,7 +194,7 @@ class _ExchangeTab extends StatelessWidget {
             cost: FragmentCost.blessingScroll,
             owned: inv.blessingScrolls,
             fragments: fragments,
-            onExchange: () => _exchange(ItemType.blessingScroll),
+            onExchange: () => _exchange(ref, ItemType.blessingScroll),
           ),
           const SizedBox(height: 16),
           _ExchangeCard(
@@ -231,19 +202,17 @@ class _ExchangeTab extends StatelessWidget {
             iconColor: Colors.amber,
             name: '골드 주머니 (500G)',
             cost: FragmentCost.goldPouch,
-            owned: -1, // 즉시 사용이므로 보유량 표시 안 함
+            owned: -1,
             fragments: fragments,
-            onExchange: () => _exchange(ItemType.goldPouch),
+            onExchange: () => _exchange(ref, ItemType.goldPouch),
           ),
         ],
       ),
     );
   }
 
-  void _exchange(ItemType type) async {
-    final engine = (await ref.read(gameEngineProvider.future));
-    engine.dispatch(ExchangeCommand(itemType: type));
-    ref.read(gameStateProvider.notifier).state = engine.state;
+  void _exchange(WidgetRef ref, ItemType type) {
+    ref.read(gameNotifierProvider.notifier).dispatch(ExchangeCommand(itemType: type));
   }
 }
 
@@ -283,7 +252,9 @@ class _ExchangeCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name, style: const TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
+                Text(name,
+                    style: const TextStyle(
+                        fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 4),
                 Row(
                   children: [
@@ -292,7 +263,8 @@ class _ExchangeCard extends StatelessWidget {
                     Text('$cost', style: TextStyle(fontSize: 14, color: Colors.grey[400])),
                     if (owned >= 0) ...[
                       const SizedBox(width: 16),
-                      Text('보유: $owned', style: TextStyle(fontSize: 14, color: Colors.grey[400])),
+                      Text('보유: $owned',
+                          style: TextStyle(fontSize: 14, color: Colors.grey[400])),
                     ],
                   ],
                 ),
@@ -316,20 +288,21 @@ class _ExchangeCard extends StatelessWidget {
 
 // ─── 도감 탭 ───
 
-class _CollectionTab extends StatelessWidget {
-  final GameState state;
-  final WidgetRef ref;
-  const _CollectionTab({required this.state, required this.ref});
+class _CollectionTab extends ConsumerWidget {
+  const _CollectionTab();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final gameState = ref.watch(gameNotifierProvider);
+    if (gameState == null) return const SizedBox.shrink();
+
     final swordAsync = ref.watch(swordTableProvider);
     if (!swordAsync.hasValue) {
       return const Center(child: CircularProgressIndicator());
     }
     final swordTable = swordAsync.value!;
     final collectibles = swordTable.collectibleSwords;
-    final collection = state.playerData.collection;
+    final collection = gameState.playerData.collection;
     final uniqueCount = collection.uniqueCount;
     final total = collectibles.length;
     final pct = total > 0 ? (uniqueCount / total * 100).toStringAsFixed(0) : '0';
@@ -338,7 +311,6 @@ class _CollectionTab extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          // 완성도
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             decoration: BoxDecoration(
@@ -347,7 +319,8 @@ class _CollectionTab extends StatelessWidget {
             ),
             child: Text(
               '컬렉션 $uniqueCount/$total ($pct%)',
-              style: const TextStyle(fontSize: 18, color: Colors.amber, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                  fontSize: 18, color: Colors.amber, fontWeight: FontWeight.bold),
             ),
           ),
           const SizedBox(height: 16),
@@ -371,7 +344,9 @@ class _CollectionTab extends StatelessWidget {
                     color: Colors.grey[850],
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: isCollected ? Colors.amber.withValues(alpha: 0.5) : Colors.grey[700]!,
+                      color: isCollected
+                          ? Colors.amber.withValues(alpha: 0.5)
+                          : Colors.grey[700]!,
                     ),
                   ),
                   child: Column(
@@ -380,10 +355,7 @@ class _CollectionTab extends StatelessWidget {
                       if (isCollected) ...[
                         Text(
                           '+${sword.level}',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[400],
-                          ),
+                          style: TextStyle(fontSize: 14, color: Colors.grey[400]),
                         ),
                         const SizedBox(height: 4),
                         Text(
@@ -399,7 +371,7 @@ class _CollectionTab extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '★' * count,
+                          '\u2605' * count,
                           style: const TextStyle(fontSize: 14, color: Colors.amber),
                         ),
                       ] else ...[
